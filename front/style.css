@@ -1,0 +1,45 @@
+
+body {
+  background-color: #FFFFFF;
+  font-family: arial;
+}
+
+div.container {
+}
+
+div.square {
+  background-color: #FFFFFF;
+  border-style: solid;
+  border-width: 1px;
+  border-color: #000000;
+  width: 40px;
+  height: 40px;
+  text-transform: uppercase;
+  text-align: center;
+  line-height: 40px;
+  font-size: 24px;
+  float: left;
+}
+
+div.empty_square {
+  background-color: #252525;
+  border-style: solid;
+  border-width: 1px;
+  border-color: #000000;
+  width: 40px;
+  height: 40px;
+  float: left;
+}
+
+div.active {
+  background-color: #FFCC00;
+}
+
+div.active_path {
+  background-color: #FFEEBB;
+}
+
+p {
+  font-family: Arial;
+  font-size: 14px;
+}
