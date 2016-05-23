@@ -1,0 +1,24 @@
+v2.
+{<<"_build/dev/lib/crossworld/ebin/Elixir.Crossworld.beam">>,
+ 'Elixir.Crossworld',module,<<"lib/crossworld.ex">>,
+ ['Elixir.Module','Elixir.Kernel','Elixir.Application'],
+ [cowboy,cowboy_router,'Elixir.Crossworld.Supervisor',
+  'Elixir.Crossworld.Router'],
+ [],nil}.
+{<<"_build/dev/lib/crossworld/ebin/Elixir.Crossworld.Supervisor.beam">>,
+ 'Elixir.Crossworld.Supervisor',module,<<"lib/supervisor.ex">>,
+ ['Elixir.Module','Elixir.Kernel','Elixir.Supervisor',
+  'Elixir.Supervisor.Spec'],
+ ['Elixir.Crossworld.Worker','Elixir.String',supervisor],
+ [],nil}.
+{<<"_build/dev/lib/crossworld/ebin/Elixir.Crossworld.Worker.beam">>,
+ 'Elixir.Crossworld.Worker',module,<<"lib/worker.ex">>,
+ ['Elixir.Kernel'],
+ ['Elixir.Map',maps,'Elixir.Agent'],
+ [],nil}.
+{<<"_build/dev/lib/crossworld/ebin/Elixir.Crossworld.Router.beam">>,
+ 'Elixir.Crossworld.Router',module,<<"lib/router.ex">>,
+ ['Elixir.Kernel'],
+ [io_lib,'Elixir.String','Elixir.Crossworld.Supervisor',cowboy_req,
+  'Elixir.Crossworld.Worker'],
+ [],nil}.
