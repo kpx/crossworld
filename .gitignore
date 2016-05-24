@@ -1,5 +1,5 @@
-/_build
-/cover
-/deps
-erl_crash.dump
-*.ez
+back/_build
+back/cover
+back/deps
+back/erl_crash.dump
+back/*.ez
