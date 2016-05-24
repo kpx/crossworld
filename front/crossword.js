@@ -1,46 +1,77 @@
 var Crossword = {
   init: function() {
-    this.puzzle = [
-      ['M', 'O', 'N', 'K', 'E', 'Y'],
-      ['O', 'R', '.', 'E', '.', '.'],
-      ['O', 'B', 'E', 'Y', '.', '.'],
-      ['N', '.', '.', 'S', 'K', 'A'],];
-    this.createPuzzle(this.puzzle, false);
+    this.puzzle = test_crossword;
+    this.createNewPuzzle(this.puzzle);
     this.x = 0;
     this.y = 0;
     this.orientation = 'h'; // h or v, horizontal vertical
     // Initialize x and y to the top left corner and hilight that square
     this.active = '#' + this.getId(this.x, this.y);
     this.hilightActive();
+    this.moveToFirstEmpty();
   },
 
-  createPuzzle: function(puzzle, showLetters) {
-    // Create the puzzle
+  createNewPuzzle: function(puzzle) {
     for (y = 0; y < puzzle.length; y++) {
       for (x = 0; x < puzzle[y].length; x++) {
-        var content = puzzle[y][x];
-
+        // Create the div object but add stuff to it later
         var div = document.createElement('div');
         var container = document.getElementById('containerId');
         div.id = this.getId(x, y);
-        if (content != '.') {
-          div.className = 'square';
-          if(showLetters) {
-            div.innerHTML = content;
-          }
+
+        // Check type of tile
+        var tile = puzzle[y][x];
+        var type = tile.type;
+        if (type === 'blank') {
+          // blank tile
+          div.className = 'square bigtext';
           div.onclick = function(e) {
             var coords = Crossword.getCoords(e.target.id);
-            Crossword.selectSquare(coords.x, coords.y)
-          }
+            Crossword.selectSquare(coords.x, coords.y);
+          };
         }
-        else {
+        else if (type === 'block') {
+          // block tile
           div.className = 'empty_square';
+        }
+        else if (type === 'clue') {
+          // single clue
+          var clue1 = tile.clue1;
+          div.className = 'square';
+          div.innerHTML = '<div class="clue">' + clue1 + '</div>';
+        }
+        else if (type === 'double') {
+          // double clue
+          var clue1 = tile.clue1;
+          var clue2 = tile.clue2;
+          div.className = 'square';
+          var innerDiv1 = document.createElement('div');
+          innerDiv1.className = 'half_square';
+          innerDiv1.innerHTML = '<div class="clue">' +  clue1 + '</div>';
+          var innerDiv2 = document.createElement('div');
+          innerDiv2.className = 'half_square';
+          innerDiv2.innerHTML = '<div class="clue">' + clue2 + '</div>';
+          div.appendChild(innerDiv1);
+          div.appendChild(innerDiv2);
         }
         container.appendChild(div);
       }
       var br = document.createElement('br');
       br.style.clear = 'left';
       container.appendChild(br);
+    }
+  },
+
+  moveToFirstEmpty: function() {
+    for(tmpY = 0; tmpY < this.puzzle.length; tmpY++) {
+      for(tmpX = 0; tmpX < this.puzzle[tmpY].length; tmpX++) {
+        if (this.isValidSquare(tmpX, tmpY)) {
+          this.x = tmpX;
+          this.y = tmpY;
+          this.hilightActive();
+          return;
+        }
+      }
     }
   },
 
@@ -105,7 +136,7 @@ var Crossword = {
   },
 
   clearActive: function() {
-    // Removes any letter at the active square and move cursor "back"
+    // Removes any letter at the active square
     $(this.active).text('');
   },
 
@@ -147,7 +178,7 @@ var Crossword = {
     }
     this.hilightActive();
   },
-  
+
   selectSquare: function(x, y) {
     // change x and y and hilight (for mouse clicks)
     this.x = x;
@@ -159,7 +190,7 @@ var Crossword = {
     // checks if the coordinates are at one of the editable squares
     if(this.puzzle[y]) {
       if (this.puzzle[y][x]) {
-        if (this.puzzle[y][x] != '.') {
+        if (this.puzzle[y][x].type == 'blank') {
           return true;
         }
       }
