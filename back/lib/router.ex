@@ -3,6 +3,7 @@ defmodule Crossworld.Router do
     {:ok, req, nil}
   end
 
+
   def handle(req, state) do
 	{method, _} = :cowboy_req.method(req)
 	{name, _} = :cowboy_req.binding(:name, req)
@@ -31,6 +32,8 @@ defmodule Crossworld.Router do
 	end
     {:ok, req, state}
   end
+
+  
 
   def terminate(_reason, _req, _state), do: :ok
 

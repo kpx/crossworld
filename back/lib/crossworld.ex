@@ -3,7 +3,8 @@ defmodule Crossworld do
 
   def start(_type, _args) do
     dispatch = :cowboy_router.compile([
-                 {:_, [{"/game/:name", Crossworld.Router, []}]}
+                {:_, [{"/ws", Crossworld.Websocket, []}]},
+                {:_, [{"/game/:name", Crossworld.Router, []}]}
                ])
     {:ok, _} = :cowboy.start_http(:http, 100,
                                   [port: 8080],

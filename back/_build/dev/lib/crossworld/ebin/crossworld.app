@@ -1,9 +1,0 @@
-{application,crossworld,
-             [{registered,[]},
-              {description,"crossworld"},
-              {vsn,"0.0.1"},
-              {modules,['Elixir.Crossworld','Elixir.Crossworld.Router',
-                        'Elixir.Crossworld.Supervisor',
-                        'Elixir.Crossworld.Worker']},
-              {mod,{'Elixir.Crossworld',[]}},
-              {applications,[kernel,stdlib,elixir,cowboy]}]}.
