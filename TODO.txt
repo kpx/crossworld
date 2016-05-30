@@ -1,0 +1,13 @@
+TODO
+
+
+packet: action:
+	join game  = gameid, player
+	new game   = gameid, player
+	update box = packet with name etc
+
+
+
+future features:
+	timestamps for games and remove the inactive ones from server
+
