@@ -1,5 +1,5 @@
 var Crossword = {
-  init: function(gameId="ROSSI") {
+  initialize: function(gameId, playerName) {
     this.puzzle = test_crossword;
     this.createNewPuzzle(this.puzzle);
     this.x = 0;
@@ -9,12 +9,19 @@ var Crossword = {
     this.active = '#' + this.getId(this.x, this.y);
     this.hilightActive();
     this.moveToFirstEmpty();
+    this.playerName = playerName;
     this.gameId = gameId;
-    this.playerName = "player name";
+    if(this.gameId == "") {
+      this.gameId = "I_LOVE_JUSSI"; // We must have a non empty gameId for the websocket
+    }
     var socketAddr = "ws://" + window.location.hostname + ":8080/ws";
-    console.log(socketAddr);
-    this.socket = new WebSocket(socketAddr);
-    this.registerCallbacks();
+    try {
+      this.socket = new WebSocket(socketAddr, this.gameId);
+      this.registerCallbacks();
+    }
+    catch(err) {
+      console.log("WS ERROR: " + err.message);
+    }
   },
 
   createNewPuzzle: function(puzzle) {

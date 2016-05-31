@@ -3,20 +3,49 @@
 <head>
   <meta charset="UTF-8">
   <link rel="stylesheet" type="text/css" href="style.css" />
-  <title>Crossword Puzzle</title>
+  <title>Crosswords: New Game</title>
 </head>
 <body>
+  <script src="jquery-1.12.3.min.js"></script>
+  <h1>The Crossword</h1>
+  <p>Please enter your name and the desired name of your crossword.</p>
+
+  <div id="nameFormContainer">
+    <form id="nameForm">
+      <input type="text" name="name" autofocus>
+      <input type="text" name="gameName">
+      <input type="submit" value="Submit">
+    </form>
+  </div>
+
   <div class="container" id="containerId">
     <!-- here is where the script puts the crossword-->
   </div>
+
+  <!-- the batman symbol -->
   <div class="square" onclick="batman()"><img src="images/batman.png"/></div>
   <br style="clear:left" />
   <p>Arrow keys to move around, space to change orientation, backspace/del to clear.</p>
-  <script src="jquery-1.12.3.min.js"></script>
+  
   <script src="objects.js"></script>
   <script src="testcrossword.js"></script>
   <script src="crossword.js"></script>
-  <script src="script.js"></script>
+  <script src="inputhandling.js"></script> 
+
+  <script type="text/javascript">
+$("#nameForm").submit(function(event) {
+  event.preventDefault();
+
+  var name = $(this).find("input[name='name']").val();
+  var gameName = $(this).find("input[name='gameName']").val();
+
+  Crossword.initialize(gameName, name);
+  document.onkeydown = checkKey;
+
+  $("#nameFormContainer").text("Hello, " + Crossword.playerName + ", your crossword's id is: " + Crossword.gameId);
+
+});
+  </script>
 </body>
 </html>
 

@@ -1,8 +1,3 @@
-// I don't know
-Crossword.init();
-
-// Register keyboard event listener
-document.onkeydown = checkKey;
 
 function getChar(charCode) {
   // handle special characters from key presses
