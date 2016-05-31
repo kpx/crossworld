@@ -15,6 +15,8 @@ defmodule Crossworld.Game do
 	def get_game(name) do
 		atom_name = String.to_existing_atom(name)
 		game = Crossworld.Worker.get(atom)
+		#todo return only game
+		game
 	end
 
 	@doc """
@@ -23,14 +25,19 @@ defmodule Crossworld.Game do
 	def update_box(name, boxid, letter, player) do
 		atom_name = String.to_existing_atom(name)
 		Crossworld.Worker.put(atom_name, boxid, letter, player)
+		#todo broadcast new box
+		players = get_players(name)
+		Enum.each(players, fn(x) -> x ! {:broadcast, boxid, letter, player} end)
+		:ok
 	end
 
 	@doc """
 	Adds a player websocket to the game
 	"""
-	def add_player(name, player, websocket) do
+	def add_player(name, player, pid) do
 		atom_name = String.to_existing_atom(name)
-		Crossworld.Worker.add_player(atom_name, player, websocket)
+		Crossworld.Worker.add_player(atom_name, player, pid)
+		:ok
 	end
 
 	@doc """
@@ -38,7 +45,9 @@ defmodule Crossworld.Game do
 	"""
 	def get_players(name) do
 		atom_name = String.to_existing_atom(name)
-		Crossworld.Worker.get_players(atom_name)
+		game = Crossworld.Worker.get(atom)
+		#todo: return only players
+		game
 	end
 
 end
