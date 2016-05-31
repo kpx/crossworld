@@ -8,6 +8,7 @@ defmodule Crossworld.Websocket do
   end
 
   def websocket_init(_type, req, _opts) do
+    #todo: add self() to game
     {:ok, req, :undefined_state}
   end
 
@@ -46,8 +47,19 @@ defmodule Crossworld.Websocket do
   	{:ok, req, state}
   end
 
+  def websocket_info({:broadcast, boxid, letter, player}, req, state) do
+    msg = box_json(boxid, letter, player)
+    {:reply, msg, req, state}
+  end
   def websocket_info(data, req, state) do
   	{:ok, req, state}
   end
+
+  defp box_json(boxid, letter, player) do
+    box = [ [ boxid: boxid, letter: letter, player: player ] ]
+    {:ok, box_json} = JSON.encode(box)
+    box_json
+  end
+
 
 end

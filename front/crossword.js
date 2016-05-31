@@ -1,5 +1,5 @@
 var Crossword = {
-  init: function() {
+  init: function(gameId="ROSSI") {
     this.puzzle = test_crossword;
     this.createNewPuzzle(this.puzzle);
     this.x = 0;
@@ -9,6 +9,12 @@ var Crossword = {
     this.active = '#' + this.getId(this.x, this.y);
     this.hilightActive();
     this.moveToFirstEmpty();
+    this.gameId = gameId;
+    this.playerName = "player name";
+    var socketAddr = "ws://" + window.location.hostname + ":8080/ws";
+    console.log(socketAddr);
+    this.socket = new WebSocket(socketAddr);
+    this.registerCallbacks();
   },
 
   createNewPuzzle: function(puzzle) {
@@ -200,6 +206,14 @@ var Crossword = {
 
   changeActiveChar: function(letter) {
     $(this.active).text(letter);
+    var debug_text = "change active char at: x: " + this.x + " y: " + this.y + " letter: " + letter + " by: " + this.playerName;
+    this.socket.send(debug_text);
+  },
+
+  registerCallbacks: function() {
+    this.socket.onmessage = function(event) {
+      console.log(event.data);
+    };
   },
 
   // the batman symbol
