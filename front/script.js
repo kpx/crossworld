@@ -81,3 +81,4 @@ function checkKey(e) {
 function batman() {
   Crossword.batman();
 }
+
