@@ -12,7 +12,6 @@ defmodule Crossworld.Supervisor do
   end
 
   def new_game(name) do
-  	atom = String.to_atom(name)
-  	Crossworld.Worker.start_link(atom)
+  	Crossworld.Worker.start_link(name)
   end
 end

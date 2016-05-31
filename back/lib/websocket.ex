@@ -24,23 +24,20 @@ defmodule Crossworld.Websocket do
     #letter = decoded["letter"]
     player = decoded["player"]
     #game = decoded["game"]
+    game = decoded["name"]
     case decoded["action"] do
       "create" ->
-        game = decoded["name"]
-        Crossworld.Supervisor.new_game(game)
-        #players = Crossworld.Router.get_game(game)
-        #{:reply, {:text, players},req, state}
+        Crossworld.Game.create_game(game, player, self())
         {:reply, {:text, player},req, state}
       "join" -> 
-        IO.puts "join 1"
-        game = String.to_atom(decoded["name"])
-        IO.puts "join 2"
-        Crossworld.Worker.add_player(game, player)
-        IO.puts "Jion 3"
-        players = Crossworld.Router.get_game(game)
-        {:reply, {:text, players},req, state}
+        Crossworld.Game.add_player(game, player, self())
+        {:reply, {:text, player}, req, state}
+      "put" ->
+        boxid = decoded["boxid"]
+        letter = decoded["letter"]
+        Crossworld.Game.update_box(game, boxid, letter, player)
     end
-    
+    {:ok, req, state}
   end
 
   def websocket_handle(data, req, state) do
@@ -49,7 +46,7 @@ defmodule Crossworld.Websocket do
 
   def websocket_info({:broadcast, boxid, letter, player}, req, state) do
     msg = box_json(boxid, letter, player)
-    {:reply, msg, req, state}
+    {:reply, {:text, msg}, req, state}
   end
   def websocket_info(data, req, state) do
   	{:ok, req, state}
