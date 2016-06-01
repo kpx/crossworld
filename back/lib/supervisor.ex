@@ -12,6 +12,8 @@ defmodule Crossworld.Supervisor do
   end
 
   def new_game(name) do
-  	Crossworld.Worker.start_link(name)
+    map = %{}
+    Agent.start_link(fn -> map end, name: name)
+  	#Crossworld.Worker.start_link(name)
   end
 end

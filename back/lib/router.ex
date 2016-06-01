@@ -1,4 +1,11 @@
 defmodule Crossworld.Router do
+	@doc """
+	DEPRECATED module defining rest api
+	"""
+  require Poison
+  
+  alias Crossworld.Game.GameMessage, as: GameMessage	
+
   def init(_transport, req, []) do
     {:ok, req, nil}
   end
@@ -16,12 +23,9 @@ defmodule Crossworld.Router do
 			:cowboy_req.reply(200, [{"content-type", "application/json; charset=utf-8"}], reply_game, req)
 		"PUT" ->
 			{:ok, body, _} = :cowboy_req.body(req)
-			{_, decoded} = JSON.decode(body)
-			box_number = decoded["box_number"]
-			letter = decoded["letter"]
-			player = decoded["player"]
-			atom = String.to_existing_atom(name)
-			Crossworld.Worker.put(atom, box_number, letter, player)
+			msg = Poison.decode!(body, as: %GameMessage{})
+			atom = String.to_existing_atom(msg.name)
+			Crossworld.Worker.put(atom, msg.boxid, msg.letter, msg.player)
 			:cowboy_req.reply(200, req)
 	end
     {:ok, req, state}

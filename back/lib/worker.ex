@@ -1,8 +1,4 @@
 defmodule Crossworld.Worker do
-  def start_link(name) do
-    map = %{}
-    Agent.start_link(fn -> map end, name: name)
-  end
 
   def get(game) do
     Agent.get(game, fn x -> x end, 5000)
@@ -13,14 +9,7 @@ defmodule Crossworld.Worker do
   end
 
   def add_player(game, player, pid) do
-    Agent.update(game, &Map.update(&1, :players, MapSet.new([{player, pid}]), fn current_players ->
-      MapSet.put(current_players, {player, pid})
-    end))
-
-  end
-
-  def get_players(game) do
-    g = Agent.get(game, fn x -> x end, 5000)
-    MapSet.to_list(Map.get(g, :players))
+    update_players = fn players -> MapSet.put(players, {player, pid}) end
+    Agent.update(game, &Map.update(&1, :players, MapSet.new([{player, pid}]), update_players))
   end
 end

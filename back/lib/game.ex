@@ -1,4 +1,8 @@
 defmodule Crossworld.Game do
+  	defmodule GameMessage do
+    	@derive [Poison.Encoder]
+    	defstruct [:action, :name, :boxid, :letter, :player]
+  	end
 	@doc """
 	Creates a game with the given 'name'
 
@@ -28,9 +32,9 @@ defmodule Crossworld.Game do
 		Crossworld.Worker.put(atom_name, boxid, letter, player)
 		players = get_players(name)
 		# Broadcast to all players
-		Enum.each(players, fn({_, x}) -> 
-			send(x, {:broadcast, boxid, letter, player}) 
-		end)
+		msg = {:broadcast, name, boxid, letter, player}
+		pids = Enum.map(players, fn({_, pid}) -> pid end)
+		Crossworld.Websocket.broadcast(pids, msg)
 		:ok
 	end
 

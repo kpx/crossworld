@@ -29,6 +29,6 @@ defmodule Crossworld.Mixfile do
   # Type "mix help deps" for more examples and options
   defp deps do
     [{:cowboy, github: "ninenines/cowboy", ref: "d08c2ab"},
-     {:json, "~> 0.3.0"}]
+     {:poison, "~> 2.0"}]
   end
 end

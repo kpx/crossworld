@@ -1,61 +1,50 @@
 defmodule Crossworld.Websocket do
-  require Record
-  Record.defrecord :state, Record.extract(:state,
-                                from: "deps/cowboy/src/cowboy_websocket.erl")
+  require Poison
+  alias Crossworld.Game.GameMessage, as: GameMessage
 
-  def init(_, req, opts) do
+  def init(_, _req, _opts) do
   	{:upgrade, :protocol, :cowboy_websocket}
   end
 
   def websocket_init(_type, req, _opts) do
-    #todo: add self() to game
     {:ok, req, :undefined_state}
   end
 
-
-  #def websocket_handle({:text, text}, req, state) do
-  #	{:reply, {:text, "WOW" <> text}, req, state}
-  #end
   def websocket_handle({:text, text}, req, state) do
-    # {{box_number: 2222, player: 'jjussoi', letter:'a', game: 'superspel'}
-    
-    {_, decoded} = JSON.decode(text)
-    #box_number = decoded["box_number"]
-    #letter = decoded["letter"]
-    player = decoded["player"]
-    #game = decoded["game"]
-    game = decoded["name"]
-    case decoded["action"] do
+    msg = Poison.decode!(text, as: %GameMessage{})
+
+    case msg.action do
       "create" ->
-        Crossworld.Game.create_game(game, player, self())
-        {:reply, {:text, player},req, state}
+        Crossworld.Game.create_game(msg.name, msg.player, self())
       "join" -> 
-        Crossworld.Game.add_player(game, player, self())
-        {:reply, {:text, player}, req, state}
+        Crossworld.Game.add_player(msg.name, msg.player, self())
       "put" ->
-        boxid = decoded["boxid"]
-        letter = decoded["letter"]
-        Crossworld.Game.update_box(game, boxid, letter, player)
+        Crossworld.Game.update_box(msg.name, msg.boxid, msg.letter, msg.player)
     end
     {:ok, req, state}
   end
 
-  def websocket_handle(data, req, state) do
+  def websocket_handle(_data, req, state) do
   	{:ok, req, state}
   end
 
-  def websocket_info({:broadcast, boxid, letter, player}, req, state) do
-    msg = box_json(boxid, letter, player)
+  def websocket_info({:broadcast, name, boxid, letter, player}, req, state) do
+    msg = create_msg(name, boxid, letter, player)
     {:reply, {:text, msg}, req, state}
   end
-  def websocket_info(data, req, state) do
+  def websocket_info(_data, req, state) do
   	{:ok, req, state}
   end
 
-  defp box_json(boxid, letter, player) do
-    box = [ [ boxid: boxid, letter: letter, player: player ] ]
-    {:ok, box_json} = JSON.encode(box)
-    box_json
+  def broadcast(pids, msg) do
+    Enum.each(pids, fn(pid) -> 
+      send(pid, msg) 
+    end)
+  end
+
+
+  defp create_msg(name, boxid, letter, player) do
+    Poison.encode!(%GameMessage{name: name, boxid: boxid, letter: letter, player: player})
   end
 
 
