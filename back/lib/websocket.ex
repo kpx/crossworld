@@ -40,6 +40,7 @@ defmodule Crossworld.Websocket do
       "put" ->
         Crossworld.Game.update_box(msg.game, msg.box, msg.letter, msg.player)
         {:ok, req, state}
+      
     end
   end
 
