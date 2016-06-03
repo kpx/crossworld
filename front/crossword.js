@@ -1,7 +1,15 @@
 function updateBox(event) {
   var data = JSON.parse(event.data);
   if (data.action === "update") {
-    $("#" + data.box).text(data.letter);
+    if(data.letter === "1") {
+      // batman symbol
+      $("#" + data.box).text('');
+      $("#" + data.box).prepend('<img src="images/batman.png" />');
+
+    }
+    else {
+      $("#" + data.box).text(data.letter);
+    }
   }
 }
 
@@ -17,7 +25,7 @@ function sendJoinGame(player, game, socket) {
   socket.send(strPacket);
 }
 var Crossword = {
-  initialize: function(gameId, playerName) {
+  initialize: function(gameId, playerName, socket) {
     this.puzzle = test_crossword;
     this.createNewPuzzle(this.puzzle);
     this.x = 0;
@@ -32,17 +40,10 @@ var Crossword = {
     if(this.gameId == "") {
       this.gameId = "I_LOVE_JUSSI";
     }
-    var socketAddr = "ws://" + window.location.hostname + ":8080/ws";
-    try {
-      this.socket = new WebSocket(socketAddr);
-
-      this.socket.onopen = function() {
-      };
-      this.socket.onmessage = updateBox;
-    }
-    catch(err) {
-      console.log("WS ERROR: " + err.message);
-    }
+    this.socket = socket;
+    this.socket.onopen = function() {
+    };
+    this.socket.onmessage = updateBox;
   },
 
 //  sendCreateGame: function(player, game, socket) {
@@ -178,6 +179,9 @@ var Crossword = {
   clearActive: function() {
     // Removes any letter at the active square
     $(this.active).text('');
+    var packet = new Packet("put", $(this.active).attr("id"), this.playerName, " ", this.gameId); // action, box, player, letter, game
+    var strPacket = JSON.stringify(packet);
+    this.socket.send(strPacket);
   },
 
   moveBack: function() {
@@ -249,6 +253,11 @@ var Crossword = {
   batman: function() {
     $(this.active).text('');
     $(this.active).prepend('<img src="images/batman.png" />');
+
+    // Send the bat signal to the server
+    var packet = new Packet("put", $(this.active).attr("id"), this.playerName, '1', this.gameId); // action, box, player, letter, game
+    var strPacket = JSON.stringify(packet);
+    this.socket.send(strPacket);
   },
 
   joinGame: function() {

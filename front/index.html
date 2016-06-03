@@ -40,8 +40,15 @@ $("#nameForm").submit(function(event) {
 
   var name = $(this).find("input[name='name']").val();
   var gameName = $(this).find("input[name='gameName']").val();
-
-  Crossword.initialize(gameName, name);
+  var socket = null;
+  try {
+    var socketAddr = "ws://" + window.location.hostname + ":8080/ws";
+    socket = new WebSocket(socketAddr);
+  }
+  catch(err) {
+    console.log("WS ERROR: " + err.message);
+  }
+  Crossword.initialize(gameName, name, socket);
   document.onkeydown = checkKey;
 
   $("#nameFormContainer").text("Hello, " + Crossword.playerName + ", your crossword's id is: " + Crossword.gameId);
