@@ -10,9 +10,18 @@ defmodule Crossworld.Game do
 	"""
 	def create_game(name, player, pid) do
 		atom_name = String.to_atom(name)
-		Crossworld.Supervisor.new_game(atom_name)
-		Crossworld.Worker.add_player(atom_name, player, pid)
-		:ok
+		case exists?(atom_name) do
+			false -> 
+				Crossworld.Supervisor.new_game(atom_name)
+				Crossworld.Worker.add_player(atom_name, player, pid)
+				:ok
+			true ->
+				:already_exists
+		end
+	end
+
+	defp exists?(atom_name) do
+		Process.whereis(atom_name) != nil
 	end
 
 	@doc """

@@ -2,6 +2,11 @@ defmodule Crossworld.Websocket do
   require Poison
   alias Crossworld.Game.GameMessage, as: GameMessage
 
+  defmodule Result do
+      @derive [Poison.Encoder]
+      defstruct result: "ok", code: 200
+  end
+
   def init(_, _req, _opts) do
   	{:upgrade, :protocol, :cowboy_websocket}
   end
@@ -15,13 +20,18 @@ defmodule Crossworld.Websocket do
 
     case msg.action do
       "create" ->
-        Crossworld.Game.create_game(msg.game, msg.player, self())
+        result = Crossworld.Game.create_game(msg.game, msg.player, self())
+        case result do
+          :ok -> {:reply, {:text, create_result_msg("ok", 201)}, req, state}
+          :already_exists -> {:reply, {:text, create_result_msg("error", 406)}, req, state}
+        end
       "join" -> 
         Crossworld.Game.add_player(msg.game, msg.player, self())
+        {:ok, req, state}
       "put" ->
         Crossworld.Game.update_box(msg.game, msg.box, msg.letter, msg.player)
+        {:ok, req, state}
     end
-    {:ok, req, state}
   end
 
   def websocket_handle(_data, req, state) do
@@ -45,6 +55,10 @@ defmodule Crossworld.Websocket do
 
   defp create_msg(game, boxid, letter, player) do
     Poison.encode!(%GameMessage{game: game, box: boxid, letter: letter, player: player})
+  end
+
+  defp create_result_msg(result, code) do
+    Poison.encode!(%Result{result: result, code: code})
   end
 
 
