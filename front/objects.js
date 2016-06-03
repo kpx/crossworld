@@ -9,11 +9,13 @@ function Tile(type='blank', clue1='', clue2='') {
   return tile;
 }
 
-function Packet(boxId, playerName, letter, gameId) {
+function Packet(action, box, player, letter, game) {
 	var packet = {
-		boxId: boxId,
-		playerName: playerName,
+    action: action,
+		box: box,
+		player: player,
 		letter: letter,
-		gameId: gameId,
+		game: game,
 	};
+  return packet;
 }

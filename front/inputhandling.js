@@ -77,3 +77,11 @@ function batman() {
   Crossword.batman();
 }
 
+function joinGame() {
+  Crossword.joinGame();
+}
+
+function createGame() {
+  Crossword.createGame();
+}
+

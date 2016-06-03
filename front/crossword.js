@@ -1,3 +1,21 @@
+function updateBox(event) {
+  var data = JSON.parse(event.data);
+  if (data.action === "update") {
+    $("#" + data.box).text(data.letter);
+  }
+}
+
+function sendCreateGame(player, game, socket) {
+  var packet = new Packet("create", undefined, player, undefined, game); //action, box, player, letter, game
+  var strPacket = JSON.stringify(packet);
+  socket.send(strPacket);
+}
+
+function sendJoinGame(player, game, socket) {
+  var packet = new Packet("join", undefined, player, undefined, game); //action, box, player, letter, game
+  var strPacket = JSON.stringify(packet);
+  socket.send(strPacket);
+}
 var Crossword = {
   initialize: function(gameId, playerName) {
     this.puzzle = test_crossword;
@@ -12,17 +30,26 @@ var Crossword = {
     this.playerName = playerName;
     this.gameId = gameId;
     if(this.gameId == "") {
-      this.gameId = "I_LOVE_JUSSI"; // We must have a non empty gameId for the websocket
+      this.gameId = "I_LOVE_JUSSI";
     }
     var socketAddr = "ws://" + window.location.hostname + ":8080/ws";
     try {
-      this.socket = new WebSocket(socketAddr, this.gameId);
-      this.registerCallbacks();
+      this.socket = new WebSocket(socketAddr);
+
+      this.socket.onopen = function() {
+      };
+      this.socket.onmessage = updateBox;
     }
     catch(err) {
       console.log("WS ERROR: " + err.message);
     }
   },
+
+//  sendCreateGame: function(player, game, socket) {
+//    var packet = new Packet("create", undefined, player, undefined, game); //action, box, player, letter, game
+//    var strPacket = JSON.stringify(packet);
+//    socket.send(strPacket);
+//  },
 
   createNewPuzzle: function(puzzle) {
     for (y = 0; y < puzzle.length; y++) {
@@ -213,14 +240,9 @@ var Crossword = {
 
   changeActiveChar: function(letter) {
     $(this.active).text(letter);
-    var debug_text = "change active char at: x: " + this.x + " y: " + this.y + " letter: " + letter + " by: " + this.playerName;
-    this.socket.send(debug_text);
-  },
-
-  registerCallbacks: function() {
-    this.socket.onmessage = function(event) {
-      console.log(event.data);
-    };
+    var packet = new Packet("put", $(this.active).attr("id"), this.playerName, letter, this.gameId); // action, box, player, letter, game
+    var strPacket = JSON.stringify(packet);
+    this.socket.send(strPacket);
   },
 
   // the batman symbol
@@ -228,4 +250,13 @@ var Crossword = {
     $(this.active).text('');
     $(this.active).prepend('<img src="images/batman.png" />');
   },
+
+  joinGame: function() {
+    console.log("player: " + this.playerName + ", game: " + this.gameId + ", socket: " + this.socket);
+    sendJoinGame(this.playerName, this.gameId, this.socket);
+  },
+
+  createGame: function() {
+    sendCreateGame(this.playerName, this.gameId, this.socket);
+  }
 };
