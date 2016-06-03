@@ -18,7 +18,7 @@ defmodule Crossworld.Game do
 			false -> 
 				Crossworld.Supervisor.new_game(atom_name)
 				#Autojoin player that creates a game
-				add_player(name, player, pid)
+				add_player_(atom_name, player, pid)
 				:ok
 			true ->
 				:already_exists
@@ -31,7 +31,7 @@ defmodule Crossworld.Game do
 	"""
 	def get_game(name) do
 		atom_name = String.to_existing_atom(name)
-		Agent.get(atom_name, fn x -> x end, @agent_timeout)
+		get_game_(atom_name)
 	end
 
 	@doc """
@@ -42,7 +42,7 @@ defmodule Crossworld.Game do
 	def update_box(name, boxid, letter, player) do
 		atom_name = String.to_existing_atom(name)
 		update_game(atom_name, boxid, letter, player)
-		players = get_players(name)
+		players = get_players(atom_name)
 		# Broadcast to all players
 		msg = {:broadcast, %GameMessage{action: "update", game: name, box: boxid, letter: letter, player: player}}
 		pids = Enum.map(players, fn({_, pid}) -> pid end)
@@ -56,6 +56,10 @@ defmodule Crossworld.Game do
 	"""
 	def add_player(name, player, pid) do
 		atom_name = String.to_existing_atom(name)
+		add_player_(atom_name, player, pid)
+	end
+
+	defp add_player_(atom_name, player, pid) do
 		update_players = fn players -> MapSet.put(players, {player, pid}) end
     	Agent.update(atom_name, &Map.update(&1, :players, MapSet.new([{player, pid}]), update_players))
 		:ok
@@ -64,14 +68,14 @@ defmodule Crossworld.Game do
 	@doc """
 	Returns all players for a game
 	"""
-	def get_players(name) do
-		atom_name = String.to_existing_atom(name)
-		game = get_game(atom_name)
+	def get_players(atom_name) do
+		game = get_game_(atom_name)
 		players = Map.get(game, :players)
 		MapSet.to_list(players)
 	end
 
 	defp update_game(game, box_number, letter, player) do
+    	
     	Agent.update(game, &Map.put(&1, box_number, {letter, player}))
   	end
 
@@ -79,5 +83,8 @@ defmodule Crossworld.Game do
 		Process.whereis(atom_name) != nil
 	end
 
+	defp get_game_(atom_name) do
+		Agent.get(atom_name, fn x -> x end, @agent_timeout)		
+	end
   	
 end
