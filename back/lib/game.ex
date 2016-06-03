@@ -42,7 +42,7 @@ defmodule Crossworld.Game do
 		Crossworld.Worker.put(atom_name, boxid, letter, player)
 		players = get_players(name)
 		# Broadcast to all players
-		msg = {:broadcast, name, boxid, letter, player}
+		msg = {:broadcast, %GameMessage{action: "update", game: name, box: boxid, letter: letter, player: player}}
 		pids = Enum.map(players, fn({_, pid}) -> pid end)
 		Crossworld.Websocket.broadcast(pids, msg)
 		:ok

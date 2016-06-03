@@ -21,13 +21,22 @@ defmodule Crossworld.Websocket do
     case msg.action do
       "create" ->
         result = Crossworld.Game.create_game(msg.game, msg.player, self())
-        case result do
-          :ok -> {:reply, {:text, create_result_msg("ok", 201)}, req, state}
-          :already_exists -> {:reply, {:text, create_result_msg("error", 406)}, req, state}
+        reply_msg = case result do
+          :ok -> create_result_msg("ok", 201)
+          :already_exists -> create_result_msg("error", 406)
         end
+        {:reply, {:text, reply_msg}, req, state}
       "join" -> 
-        Crossworld.Game.add_player(msg.game, msg.player, self())
-        {:ok, req, state}
+        game = Crossworld.Game.get_game(msg.game)
+        players = MapSet.to_list(Map.fetch!(game, :players))
+        reply_msg = case List.keymember?(players, msg.player, 0) do
+          true -> 
+            create_result_msg("error", 406)
+          false -> 
+            Crossworld.Game.add_player(msg.game, msg.player, self())
+            create_game_msg(msg.game, game) 
+        end
+        {:reply, {:text, reply_msg}, req, state}
       "put" ->
         Crossworld.Game.update_box(msg.game, msg.box, msg.letter, msg.player)
         {:ok, req, state}
@@ -38,23 +47,27 @@ defmodule Crossworld.Websocket do
   	{:ok, req, state}
   end
 
-  def websocket_info({:broadcast, name, boxid, letter, player}, req, state) do
-    msg = create_update_msg(name, boxid, letter, player)
-    {:reply, {:text, msg}, req, state}
+  def websocket_info({:broadcast, broadcast_msg }, req, state) do
+    #name, boxid, letter, player
+    #msg = create_update_msg(name, boxid, letter, player)
+    encoded_msg = Poison.encode!(broadcast_msg)
+    {:reply, {:text, encoded_msg}, req, state}
   end
   def websocket_info(_data, req, state) do
   	{:ok, req, state}
   end
 
   def broadcast(pids, msg) do
-    Enum.each(pids, fn(pid) -> 
-      send(pid, msg) 
-    end)
+    Enum.each(pids, fn(pid) -> send(pid, msg) end)
   end
 
-
-  defp create_update_msg(game, boxid, letter, player) do
-    Poison.encode!(%GameMessage{action: "update", game: game, box: boxid, letter: letter, player: player})
+  defp create_game_msg(game_name, game) do
+    boxes = 
+      for {key, value} <- Map.to_list(game), 
+          key != :players,
+          {letter, player} = value, 
+          do: %GameMessage{action: "update", game: game_name, box: key, letter: letter, player: player}
+    Poison.encode!(boxes)
   end
 
   defp create_result_msg(result, code) do
