@@ -39,7 +39,7 @@ defmodule Crossworld.Websocket do
   end
 
   def websocket_info({:broadcast, name, boxid, letter, player}, req, state) do
-    msg = create_msg(name, boxid, letter, player)
+    msg = create_update_msg(name, boxid, letter, player)
     {:reply, {:text, msg}, req, state}
   end
   def websocket_info(_data, req, state) do
@@ -53,8 +53,8 @@ defmodule Crossworld.Websocket do
   end
 
 
-  defp create_msg(game, boxid, letter, player) do
-    Poison.encode!(%GameMessage{game: game, box: boxid, letter: letter, player: player})
+  defp create_update_msg(game, boxid, letter, player) do
+    Poison.encode!(%GameMessage{action: "update", game: game, box: boxid, letter: letter, player: player})
   end
 
   defp create_result_msg(result, code) do
