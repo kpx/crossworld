@@ -1,45 +1,47 @@
 defmodule Crossworld.Game do
+	@agent_timeout 5000
+
   	defmodule GameMessage do
     	@derive [Poison.Encoder]
     	defstruct [:action, :game, :box, :letter, :player]
   	end
+	
 	@doc """
-	Creates a game with the given 'name'
+	Creates a game with the given 'name' and adds the creating player
+	to that game
 
-	Returns :ok
+	Returns :ok or :already_exists if there exists a game with that name
 	"""
 	def create_game(name, player, pid) do
 		atom_name = String.to_atom(name)
 		case exists?(atom_name) do
 			false -> 
 				Crossworld.Supervisor.new_game(atom_name)
-				Crossworld.Worker.add_player(atom_name, player, pid)
+				#Autojoin player that creates a game
+				add_player(name, player, pid)
 				:ok
 			true ->
 				:already_exists
 		end
 	end
 
-	defp exists?(atom_name) do
-		Process.whereis(atom_name) != nil
-	end
 
 	@doc """
 	Returns a game 
 	"""
 	def get_game(name) do
 		atom_name = String.to_existing_atom(name)
-		game = Crossworld.Worker.get(atom_name)
-		#todo remove players 
-		game
+		Agent.get(atom_name, fn x -> x end, @agent_timeout)
 	end
 
 	@doc """
-	Updates a boxid with a letter written by player
+	Updates a boxid with a letter written by player. Also broadcast
+	that update to all websockets connected to that game.
+
 	"""
 	def update_box(name, boxid, letter, player) do
 		atom_name = String.to_existing_atom(name)
-		Crossworld.Worker.put(atom_name, boxid, letter, player)
+		update_game(atom_name, boxid, letter, player)
 		players = get_players(name)
 		# Broadcast to all players
 		msg = {:broadcast, %GameMessage{action: "update", game: name, box: boxid, letter: letter, player: player}}
@@ -50,11 +52,12 @@ defmodule Crossworld.Game do
 
 	
 	@doc """
-	Adds a player websocket to the game
+	Adds a player and its websocket to the game
 	"""
 	def add_player(name, player, pid) do
 		atom_name = String.to_existing_atom(name)
-		Crossworld.Worker.add_player(atom_name, player, pid)
+		update_players = fn players -> MapSet.put(players, {player, pid}) end
+    	Agent.update(atom_name, &Map.update(&1, :players, MapSet.new([{player, pid}]), update_players))
 		:ok
 	end
 
@@ -63,9 +66,18 @@ defmodule Crossworld.Game do
 	"""
 	def get_players(name) do
 		atom_name = String.to_existing_atom(name)
-		game = Crossworld.Worker.get(atom_name)
+		game = get_game(atom_name)
 		players = Map.get(game, :players)
 		MapSet.to_list(players)
 	end
 
+	defp update_game(game, box_number, letter, player) do
+    	Agent.update(game, &Map.put(&1, box_number, {letter, player}))
+  	end
+
+	defp exists?(atom_name) do
+		Process.whereis(atom_name) != nil
+	end
+
+  	
 end

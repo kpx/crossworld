@@ -48,8 +48,6 @@ defmodule Crossworld.Websocket do
   end
 
   def websocket_info({:broadcast, broadcast_msg }, req, state) do
-    #name, boxid, letter, player
-    #msg = create_update_msg(name, boxid, letter, player)
     encoded_msg = Poison.encode!(broadcast_msg)
     {:reply, {:text, encoded_msg}, req, state}
   end

@@ -25,7 +25,7 @@ defmodule Crossworld.Router do
 			{:ok, body, _} = :cowboy_req.body(req)
 			msg = Poison.decode!(body, as: %GameMessage{})
 			atom = String.to_existing_atom(msg.name)
-			Crossworld.Worker.put(atom, msg.boxid, msg.letter, msg.player)
+			Crossworld.Game.update_game(atom, msg.boxid, msg.letter, msg.player)
 			:cowboy_req.reply(200, req)
 	end
     {:ok, req, state}
@@ -38,7 +38,7 @@ defmodule Crossworld.Router do
   def get_game(name) do
   	# assumption: the game is started and thereby the atom exists
 	atom = String.to_existing_atom(name)
-	game = Crossworld.Worker.get(atom)
+	game = Crossworld.Game.get_game(atom)
 	game1 = List.foldl(game, [], fn ({box_number, {letter, player}}, acc) ->
 		[ [ box_number: box_number, letter: letter, player: player ] | acc ]
 	end)
