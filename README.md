@@ -18,3 +18,19 @@ If [available in Hex](https://hex.pm/docs/publish), the package can be installed
           [applications: [:crossworld]]
         end
 
+## Development
+
+### Backend
+
+* Install [elixir](http://elixir-lang.org/install.html)
+
+Install deps and run:
+
+	$ cd back && mix deps.get
+	$ iex -S mix
+
+### Frontend
+
+Start a web server (for example using python):
+
+	$ cd front && python3 -m http.server
