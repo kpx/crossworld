@@ -10,4 +10,5 @@ packet: action:
 
 future features:
 	timestamps for games and remove the inactive ones from server
+	add hash function to check if crossword is synchronized
 
