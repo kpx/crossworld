@@ -1,7 +1,7 @@
 defmodule Crossworld.Game do
   	defmodule GameMessage do
     	@derive [Poison.Encoder]
-    	defstruct [:action, :name, :boxid, :letter, :player]
+    	defstruct [:action, :game, :box, :letter, :player]
   	end
 	@doc """
 	Creates a game with the given 'name'
@@ -12,6 +12,7 @@ defmodule Crossworld.Game do
 		atom_name = String.to_atom(name)
 		Crossworld.Supervisor.new_game(atom_name)
 		Crossworld.Worker.add_player(atom_name, player, pid)
+		:ok
 	end
 
 	@doc """

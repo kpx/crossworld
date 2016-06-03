@@ -15,11 +15,11 @@ defmodule Crossworld.Websocket do
 
     case msg.action do
       "create" ->
-        Crossworld.Game.create_game(msg.name, msg.player, self())
+        Crossworld.Game.create_game(msg.game, msg.player, self())
       "join" -> 
-        Crossworld.Game.add_player(msg.name, msg.player, self())
+        Crossworld.Game.add_player(msg.game, msg.player, self())
       "put" ->
-        Crossworld.Game.update_box(msg.name, msg.boxid, msg.letter, msg.player)
+        Crossworld.Game.update_box(msg.game, msg.box, msg.letter, msg.player)
     end
     {:ok, req, state}
   end
@@ -44,7 +44,7 @@ defmodule Crossworld.Websocket do
 
 
   defp create_msg(name, boxid, letter, player) do
-    Poison.encode!(%GameMessage{name: name, boxid: boxid, letter: letter, player: player})
+    Poison.encode!(%GameMessage{name: name, box: boxid, letter: letter, player: player})
   end
 
 
