@@ -43,8 +43,8 @@ defmodule Crossworld.Websocket do
   end
 
 
-  defp create_msg(name, boxid, letter, player) do
-    Poison.encode!(%GameMessage{name: name, box: boxid, letter: letter, player: player})
+  defp create_msg(game, boxid, letter, player) do
+    Poison.encode!(%GameMessage{game: game, box: boxid, letter: letter, player: player})
   end
 
 
