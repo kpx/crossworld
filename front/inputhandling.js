@@ -1,4 +1,6 @@
 
+var allowedChars = "abcdefghijklmnopqrstuvwxyzåäö";
+
 function getChar(charCode) {
   // handle special characters from key presses
   if (charCode >= 65 && charCode <= 90) {
@@ -64,8 +66,14 @@ function checkKey(e) {
     Crossword.changeOrientation();
   }
   else {
-    var charCode = e.which || e.keyCode;
-    var letter = getChar(charCode);
+    var letter = null;
+    if(e.key == undefined) {
+      var charCode = e.which || e.keyCode;
+      letter = getChar(charCode);
+    }
+    else if (allowedChars.contains(e.key)) {
+      letter = e.key;
+    }
     if (letter) {
       Crossword.changeActiveChar(letter);
       Crossword.moveForward();
