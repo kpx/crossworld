@@ -7,11 +7,10 @@ defmodule Crossworld.Supervisor do
 
   def init([]) do
     children = []
-
     supervise(children, strategy: :one_for_one)
   end
 
-  def new_game(name) do
+  def new_room(name) do
     map = %{}
     Agent.start_link(fn -> map end, name: name)
   	#Crossworld.Worker.start_link(name)
