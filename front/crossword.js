@@ -1,15 +1,21 @@
-function updateBox(event) {
-  var data = JSON.parse(event.data);
-  if (data.action === "update") {
-    if(data.letter === "1") {
+function updateBoxBeta(data) {
+  if(data.letter === "1") {
       // batman symbol
       $("#" + data.box).text('');
       $("#" + data.box).prepend('<img src="images/batman.png" />');
-
     }
     else {
       $("#" + data.box).text(data.letter);
     }
+}
+
+function updateBox(event) {
+  var data = JSON.parse(event.data);
+  if (data.action === "update") {
+    updateBoxBeta(data);
+  }
+  else if ($.isArray(data)) {
+    data.forEach(updateBoxBeta);
   }
 }
 
@@ -261,7 +267,6 @@ var Crossword = {
   },
 
   joinGame: function() {
-    console.log("player: " + this.playerName + ", game: " + this.gameId + ", socket: " + this.socket);
     sendJoinGame(this.playerName, this.gameId, this.socket);
   },
 

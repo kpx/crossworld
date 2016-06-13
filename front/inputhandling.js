@@ -71,7 +71,7 @@ function checkKey(e) {
       var charCode = e.which || e.keyCode;
       letter = getChar(charCode);
     }
-    else if (allowedChars.contains(e.key)) {
+    else if (allowedChars.indexOf(e.key) != -1) {
       letter = e.key;
     }
     if (letter) {
@@ -86,10 +86,12 @@ function batman() {
 }
 
 function joinGame() {
+  initGame();
   Crossword.joinGame();
 }
 
 function createGame() {
+  initGame();
   Crossword.createGame();
 }
 

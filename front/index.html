@@ -2,30 +2,30 @@
 <html>
 <head>
   <meta charset="UTF-8">
-  <link rel="stylesheet" type="text/css" href="style.css" />
+  <link rel="stylesheet" type="text/css" href="style.css"/>
+  <link rel="stylesheet" type="text/css" href="bootstrap.min.css"/>
   <title>Crosswords: New Game</title>
 </head>
 <body>
   <script src="jquery-1.12.3.min.js"></script>
   <h1>The Crossword</h1>
+
   <p>Please enter your name and the desired name of your crossword.</p>
 
-  <div id="nameFormContainer">
-    <form id="nameForm">
-      <input type="text" name="name" autofocus>
-      <input type="text" name="gameName">
-      <input type="submit" value="Submit">
-    </form>
+  <div id="nameFormContainer" class="form-group">
+    <div id="nameForm" class="form-inline">
+      <input type="text" name="name" placeholder="name" autofocus><br>
+      <input type="text" name="gameName" placeholder="game name"><br>
+      <button onclick="createGame()">Create Game</button>
+      <button onclick="joinGame()">Join Game</button>
+    </div>
   </div>
-
   <div class="container" id="containerId">
     <!-- here is where the script puts the crossword-->
   </div>
 
   <!-- the batman symbol -->
   <div class="square" onclick="batman()"><img src="images/batman.png"/></div>
-  <button onclick="createGame()">Create Game</button>
-  <button onclick="joinGame()">Join Game</button>
   <br style="clear:left" />
   <p>Arrow keys to move around, space to change orientation, backspace/del to clear.</p>
   
@@ -35,26 +35,27 @@
   <script src="inputhandling.js"></script> 
 
   <script type="text/javascript">
-$("#nameForm").submit(function(event) {
-  event.preventDefault();
+var socket = null;
+try {
+  var socketAddr = "ws://" + window.location.hostname + ":8080/ws";
+  socket = new WebSocket(socketAddr);
+}
+catch(err) {
+  console.log("WS ERROR: " + err.message);
+}
+function initGame() {
 
-  var name = $(this).find("input[name='name']").val();
-  var gameName = $(this).find("input[name='gameName']").val();
-  var socket = null;
-  try {
-    var socketAddr = "ws://" + window.location.hostname + ":8080/ws";
-    socket = new WebSocket(socketAddr);
-  }
-  catch(err) {
-    console.log("WS ERROR: " + err.message);
-  }
+  var name = $("#nameFormContainer").find("input[name='name']").val();
+  var gameName = $("#nameFormContainer").find("input[name='gameName']").val();
+
   Crossword.initialize(gameName, name, socket);
   document.onkeydown = checkKey;
 
   $("#nameFormContainer").text("Hello, " + Crossword.playerName + ", your crossword's id is: " + Crossword.gameId);
 
-});
+}
   </script>
+
 </body>
 </html>
 

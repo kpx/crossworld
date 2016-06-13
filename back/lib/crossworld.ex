@@ -2,6 +2,7 @@ defmodule Crossworld do
   use Application
 
   def start(_type, _args) do
+    
     dispatch = :cowboy_router.compile([
                 {:_, [{"/ws", Crossworld.Websocket, []}]},
                 {:_, [{"/game/:name", Crossworld.Router, []}]}

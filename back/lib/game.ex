@@ -12,79 +12,64 @@ defmodule Crossworld.Game do
 
 	Returns :ok or :already_exists if there exists a game with that name
 	"""
-	def create_game(name, player, pid) do
-		atom_name = String.to_atom(name)
-		case exists?(atom_name) do
+	def create_room(room_name, creator, creator_pid) when is_binary(room_name) do
+		atom_name = String.to_atom(room_name)
+		create_room(atom_name, creator, creator_pid)
+	end
+	def create_room(room_name, creator, creator_pid) when is_atom(room_name) do	
+		case exists?(room_name) do
 			false -> 
-				Crossworld.Supervisor.new_game(atom_name)
+				Crossworld.Supervisor.new_room(room_name)
 				#Autojoin player that creates a game
-				add_player_(atom_name, player, pid)
+				add_member(room_name, creator, creator_pid)
 				:ok
 			true ->
 				:already_exists
 		end
 	end
 
-
 	@doc """
-	Returns a game 
+	Adds a member and its websocket pid to the room
 	"""
-	def get_game(name) do
-		atom_name = String.to_existing_atom(name)
-		get_game_(atom_name)
+	def add_member(room_name, member, member_pid) when is_binary(room_name) do
+		atom_name = String.to_existing_atom(room_name)
+		add_member(atom_name, member, member_pid)
 	end
-
-	@doc """
-	Updates a boxid with a letter written by player. Also broadcast
-	that update to all websockets connected to that game.
-
-	"""
-	def update_box(name, boxid, letter, player) do
-		atom_name = String.to_existing_atom(name)
-		update_game(atom_name, boxid, letter, player)
-		players = get_players(atom_name)
-		# Broadcast to all players
-		msg = {:broadcast, %GameMessage{action: "update", game: name, box: boxid, letter: letter, player: player}}
-		pids = Enum.map(players, fn({_, pid}) -> pid end)
-		Crossworld.Websocket.broadcast(pids, msg)
-		:ok
-	end
-
-	
-	@doc """
-	Adds a player and its websocket to the game
-	"""
-	def add_player(name, player, pid) do
-		atom_name = String.to_existing_atom(name)
-		add_player_(atom_name, player, pid)
-	end
-
-	defp add_player_(atom_name, player, pid) do
-		update_players = fn players -> MapSet.put(players, {player, pid}) end
-    	Agent.update(atom_name, &Map.update(&1, :players, MapSet.new([{player, pid}]), update_players))
+	def add_member(room_name, member, member_pid) when is_atom(room_name) do
+		update_members = fn members -> MapSet.put(members, {member, member_pid}) end
+    	Agent.update(room_name, &Map.update(&1, :members, MapSet.new([{member, member_pid}]), update_members))
 		:ok
 	end
 
 	@doc """
 	Returns all players for a game
 	"""
-	def get_players(atom_name) do
-		game = get_game_(atom_name)
-		players = Map.get(game, :players)
-		MapSet.to_list(players)
+	def get_members(room_name) when is_atom(room_name) do
+		room_info = get_room_info(room_name)
+		members = Map.get(room_info, :members, MapSet.new())
+		MapSet.to_list(members)
 	end
 
-	defp update_game(game, box_number, letter, player) do
-    	
-    	Agent.update(game, &Map.put(&1, box_number, {letter, player}))
+	def update_room(room_name, key, data) when is_binary(room_name) do
+		atom_name = String.to_existing_atom(room_name)
+		update_room(atom_name, key, data)
+	end
+	def update_room(room_name, key, data) when is_atom(room_name) do
+    	Agent.update(room_name, &Map.put(&1, key, data))
   	end
+
+	def get_room_info(room_name) when is_binary(room_name) do
+		atom_name = String.to_existing_atom(room_name)
+		get_room_info(atom_name)
+	end
+	def get_room_info(room_name) when is_atom(room_name) do
+		Agent.get(room_name, fn x -> x end, @agent_timeout)		
+	end
 
 	defp exists?(atom_name) do
 		Process.whereis(atom_name) != nil
 	end
 
-	defp get_game_(atom_name) do
-		Agent.get(atom_name, fn x -> x end, @agent_timeout)		
-	end
+
   	
 end
