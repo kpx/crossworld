@@ -1,0 +1,175 @@
+defmodule Crossworld.Generator do
+	words = [".apa", ".korthus", ".kanel", ".fransman", ".koala",
+        ".svala", ".skalp", ".toalett", ".juni", ".skunk", ".boll", ".rulla",
+        ".svulstig", ".www", ".rimma", ".samba", ".gröt", ".tarm", ".fisk",
+        ".grus", ".pinne", ".hål", ".guld", ".väska", ".pang", ".slang",
+        ".bröd", ".ål", ".lax", ".kvack", ".dunk", ".bunke", ".svärm", ".räka",
+        ".zoo", ".ostron", ".jul", ".ful", ".raw"]
+    maxx = 20
+    maxy = 20
+
+    def initialize_map(max_x, max_y) do
+    	Map.new(List.flatten(for x <- 1..max_x do for y <- 1..max_y do {{x, y}, nil} end end))
+    end
+
+    def insert_at(grid, word, x, y, horizontal) do
+    	case horizontal do
+    		true -> 
+    			Enum.reduce(Enum.with_index(to_char_list(word), x), grid, fn {char, char_x}, new_grid ->
+    				Map.put(new_grid, {char_x, y}, char)
+    			end)
+    		false -> 
+    			Enum.reduce(Enum.with_index(to_char_list(word), y), grid, fn {char, char_y}, new_grid ->
+    				Map.put(new_grid, {x, char_y}, char)
+    			end)
+    	end
+    	
+    end
+
+    def generate(words, max_x, max_y) do
+    	words = [".apa", ".korthus", ".kanel", ".fransman", ".koala",
+        ".svala", ".skalp", ".toalett", ".juni", ".skunk", ".boll", ".rulla",
+        ".svulstig", ".www", ".rimma", ".samba", ".gröt", ".tarm", ".fisk",
+        ".grus", ".pinne", ".hål", ".guld", ".väska", ".pang", ".slang",
+        ".bröd", ".ål", ".lax", ".kvack", ".dunk", ".bunke", ".svärm", ".räka",
+        ".zoo", ".ostron", ".jul", ".ful", ".raw"]
+    	shuffled_words = Enum.shuffle(words)
+    	grid = initialize_map(max_x, max_y)
+    	[h | t] = shuffled_words
+    	{mid_x, mid_y} = {round(max_x/2), round(max_y/2)}
+    	grid1 = insert_at(grid, ".slang", mid_x, mid_y, false) 
+    	#grid2 = List.foldl(words, {grid1, true}, fn word, {acc, horizontal} ->
+    	#	print_grid(acc, max_x, max_y)
+    	#	case insert_word(acc, word, horizontal) do
+    	#		{new_grid, true} ->
+    	#			{new_grid, not horizontal}
+    	#		{new_grid, false} ->
+    	#			case insert_word(acc, word, not horizontal) do
+    	#				{new_grid1, true} ->
+    	#					{new_grid1, horizontal}
+    	#				{new_grid1, false} ->
+    	#					{acc, horizontal}
+    	#			end
+    	#	end
+
+    	#end)
+    	{grid2, _} = insert_word(grid1, ".apa", true)
+    	{grid3, _} = insert_word(grid2, ".korthus", false)
+    	print_grid(grid3, max_x, max_y)
+
+    end
+
+    def get_used_spaces(map) do
+    	Enum.filter(map, fn {k,v} -> v != nil end)
+    end
+
+    def print_grid(grid, max_x, max_y) do
+    	for y <- 1..max_y do
+    		for x <- 1..max_x do
+    			v = grid[{x,y}]
+    			c = case v do
+    				nil -> " "
+    				_ -> [v]
+    			end
+    			IO.write c 
+    		end
+    		IO.write "\n"
+    	end
+
+    end
+
+
+    def insert_word(grid, word, horizontal) do
+    	used = get_used_spaces(grid)
+    	List.foldl(used, {grid, false}, fn {{x, y}, char}, {acc, has_inserted} ->
+    		case {has_inserted, :binary.match(word, <<char>>)} do #String.split(word, char, parts: 2) do#(String.contains?(word, char)) do
+    			{false, {index, _}} ->
+    			 #[front, back] ->
+
+    				is_valid_pos?(grid, word, index, x, y, horizontal)
+    				case horizontal do
+    					true ->
+    						{insert_at(acc, word, x - index, y, horizontal), true}
+    					false ->
+    						{insert_at(acc, word, x, y - index, horizontal), true}
+    				end
+    				
+    			{_, :nomatch} -> #[word] -> 
+    				{acc, has_inserted}
+    			{true, _} ->
+    				{acc, has_inserted}
+    		end
+
+    	end)
+    end
+
+    
+    def is_valid_pos?(grid, word, i, x, y, horizontal) when horizontal do
+    	#TODO: config plx
+    	max_x = 20
+    	max_y = 20
+
+    	leftmost_x = x - i
+    	char_after_word_x = leftmost_x + String.length(word)
+    	word_with_index = Enum.with_index(String.to_char_list(word), leftmost_x)
+    	is_valid = List.foldl(word_with_index, true, fn {c, char_x}, acc -> 
+    		acc && 
+    			(char_x == x || 
+    			not pos_has_neighbours?(grid, char_x, y, horizontal) ||
+    			is_non_conflicting_char?(grid, c, char_x, y, horizontal))
+    		
+    	end)
+    	is_valid && 
+    	grid[{char_after_word_x, y}] && 
+    	is_inside_grid?(leftmost_x, y, max_x, max_y) &&
+    	is_inside_grid?(char_after_word_x, y, max_x, max_y)
+    end
+	def is_valid_pos?(grid, word, i, x, y, horizontal) when not horizontal do
+    	#TODO: config plx
+    	max_x = 20
+    	max_y = 20
+
+    	topmost_y = y - i
+    	char_after_word_y = topmost_y + String.length(word)
+    	word_with_index = Enum.with_index(String.to_char_list(word), topmost_y)
+    	is_valid = List.foldl(word_with_index, true, fn {c, char_y}, acc -> 
+    		IO.inspect [c]
+    		is_crossing_letter = char_y == y
+    		IO.puts "is cross"
+    		IO.inspect is_crossing_letter
+    		has_no_neighbours = not pos_has_neighbours?(grid, x, char_y, horizontal)
+    		IO.puts "has no naij"
+    		IO.inspect has_no_neighbours
+    		is_non_conflicting_char = is_non_conflicting_char?(grid, c, x, char_y, horizontal)
+
+    		acc && (is_crossing_letter || (has_no_neighbours && is_non_conflicting_char)) 
+    		
+    	end)
+    	is_valid && 
+    	grid[{x, char_after_word_y}] && 
+    	is_inside_grid?(x, topmost_y, max_x, max_y) &&
+    	is_inside_grid?(x, char_after_word_y, max_x, max_y)
+    end
+	
+    def is_inside_grid?(x, y, max_x, max_y) do
+    	x <= max_x && y <= max_y && x > 0 && y > 0
+    end
+
+    def is_non_conflicting_char?(grid, char, x, y, horizontal) do
+    	grid[{x,y}] == char || grid[{x,y}] == nil 
+    end
+
+    def pos_has_neighbours?(grid, x, y, horizontal) do
+    	case horizontal do
+    		true ->
+    			is_empty?(grid, x, y+1) && is_empty?(grid, x, y-1)
+    		false ->
+    			a = is_empty?(grid, x+1, y) && is_empty?(grid, x-1, y)
+    			a
+    	end
+    end
+    def is_empty?(grid, x, y) do
+    	grid[{x,y}] == nil
+    end
+
+end
