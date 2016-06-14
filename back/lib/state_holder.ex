@@ -1,2 +1,0 @@
-defmodule StateHolder do
-end
