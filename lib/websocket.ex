@@ -53,7 +53,7 @@ defmodule Crossworld.Websocket do
   defp create_game_msg(game_name, game) do
     boxes = 
       for {key, value} <- Map.to_list(game), 
-          key != :players,
+          key != :members,
           {letter, player} = value, 
           do: %GameMessage{action: "update", game: game_name, box: key, letter: letter, player: player}
     Poison.encode!(boxes)
