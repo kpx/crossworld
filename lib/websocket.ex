@@ -38,7 +38,7 @@ defmodule Crossworld.Websocket do
     {:reply, reply_msg}
   end
   defp handle_action(%GameMessage{action: "put"} = msg) do
-    StateHolder.update_room(msg.game, msg.box, {msg.letter, msg.player})
+    StateHolder.Room.update_room(msg.game, msg.box, {msg.letter, msg.player})
     broadcast_update(msg.game, msg.box, msg.letter, msg.player)
     :no_reply
   end
