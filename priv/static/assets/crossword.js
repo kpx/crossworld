@@ -2,7 +2,7 @@ function updateBoxBeta(data) {
   if(data.letter === "1") {
       // batman symbol
       $("#" + data.box).text('');
-      $("#" + data.box).prepend('<img src="images/batman.png" />');
+      $("#" + data.box).prepend('<img src="assets/images/batman.png" />');
     }
     else {
       $("#" + data.box).text(data.letter);

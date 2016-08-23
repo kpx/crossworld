@@ -11,11 +11,11 @@ defmodule Crossworld.Websocket do
     defstruct [:action, :game, :box, :letter, :player]
   end
 
-  def websocket_handle(text_msg) do
+  def websocket_handle({:text, text_msg}) do
     msg = Poison.decode!(text_msg, as: %GameMessage{})
     handle_action(msg)
   end
-
+ 
   @spec handle_action(%GameMessage{}) :: {:reply, String.t} | :no_reply
   defp handle_action(%GameMessage{action: "create"} = msg) do
     result = StateHolder.Room.create_room(msg.game, msg.player, self())
@@ -47,7 +47,7 @@ defmodule Crossworld.Websocket do
     # Broadcast to all players
     game_msg = %GameMessage{action: "update", game: room_name, box: boxid, letter: letter, player: player}
     encoded_msg = Poison.encode!(game_msg)
-    StateHolder.Room.broadcast(room_name, encoded_msg)
+    StateHolder.Room.broadcast_text(room_name, encoded_msg)
   end
 
   defp create_game_msg(game_name, game) do
