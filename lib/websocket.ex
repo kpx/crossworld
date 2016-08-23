@@ -2,8 +2,8 @@ defmodule Crossworld.Websocket do
   require Poison
 
   defmodule Result do
-      @derive [Poison.Encoder]
-      defstruct result: "ok", code: 200
+    @derive [Poison.Encoder]
+    defstruct result: "ok", code: 200
   end
 
   defmodule GameMessage do
